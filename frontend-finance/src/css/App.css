@@ -1,0 +1,207 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #ffffff); /* Adjusted to white for better visibility */
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #ffffff); /* Adjusted to white for better visibility */
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+#h1 {
+  color: #ffffff; /* White for better visibility */
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); /* Shadow for extra readability */
+}
+
+.card {
+  padding: 2rem;
+  background-color: rgba(255, 255, 255, 0.85); /* Semi-transparent white background */
+  border: 1px solid #251a06;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 3rem;
+  grid-auto-flow: dense;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+.card.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  color: #333333; /* Darker text color for contrast */
+  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8); /* Subtle shadow */
+}
+
+.card.text-muted {
+  color: #444444; /* Adjusted for clarity */
+  font-size: 1.2rem;
+}
+
+.read-the-docs {
+  color: #ffffff;
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  text-align: left;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Button Styling */
+.btn {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border: none;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border: none;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.btn-danger:hover {
+  background-color: #a71d2a;
+}
+
+/* Layout Styling */
+body {
+  background-image: url('../../src/img/ai.jpg');
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  color: #ffffff; /* Default text color to stand out against background */
+  font-family: 'Arial', sans-serif;
+  font-size: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); /* Add shadow for readability */
+}
+
+.container {
+  padding: 2rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-gap: 2rem;
+  grid-auto-flow: dense;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+/* Modal styling */
+.modal-content {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  background-color: #007bff;
+  color: #fff;
+  border-bottom: none;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.modal-body {
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  border-top: none;
+  justify-content: center;
+}
+
+.modal-footer .btn {
+  border-radius: 5px;
+  padding: 0.5rem 1.5rem;
+}
+
+.modal-footer .btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: #565e64;
+  border-color: #565e64;
+}
+
+.modal-footer .btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.modal-footer .btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Add padding to the modal body for a cleaner look */
+.modal-body p {
+  margin-bottom: 0.8rem;
+}
