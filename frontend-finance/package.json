@@ -10,7 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "cdbreact": "^1.5.19",
+    "@react-login-page/page11": "^1.0.4",
+    "axios": "^1.7.7",
+    "bootstrap": "^5.3.3",
+    "js-cookie": "^3.0.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
