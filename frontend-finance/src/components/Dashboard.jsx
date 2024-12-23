@@ -4,6 +4,7 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
 import Footer from "./Footer";
+import Transactions from "./Transactions";
 
 export default function Dashboard() {
     const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || null);
@@ -13,7 +14,7 @@ export default function Dashboard() {
     const [error, setError] = useState("");
     const [showTransactionForm, setShowTransactionForm] = useState(false);
     const [formData, setFormData] = useState({
-        accountId: "",
+        fk_id_account: "",
         category: "",
         typeTransaction: "",
         amount: "",
@@ -21,103 +22,177 @@ export default function Dashboard() {
         transactionDate: "",
     });
 
+    // Category and transaction type mappings
+    const categoryMapping = {
+        1: "salary",
+        2: "Rent",
+        3: "Feeding",
+        4: "Bills",
+        5: "Leisure/Fun",
+        6: "Investment",
+        7: "Charity",
+    };
+
+    const transactionTypeMapping = {
+        1: "Deposit",
+        2: "Withdrawal",
+    };
+
     useEffect(() => {
-        if (!user) {
-            setUser(null); // Clear the user state for consistency
-            return;
+        if (user) {
+            fetchTransactions();
+            setUser(user);
         }
-
-        const fetchTransactions = async () => {
-            try {
-                const response = await fetch(`/api/transaction.php?userId=${user.id_user}`);
-                const data = await response.json();
-                setTransactions(Array.isArray(data) ? data : []);
-            } catch (error) {
-                console.error("Error fetching transactions:", error);
-            }
-        };
-
-        fetchTransactions();
     }, [user]);
 
+    const fetchTransactions = async () => {
+        try {
+            const response = await  fetch(`http://localhost/financeapp/Myfinanceapp/Backend-finance/api/transaction.php?id_user=${user.id_user}`);
+            const data = await response.json();
+            console.log("fetched transactions:", data);
+            setTransactions(data || []); 
+        } catch (error) {
+            console.error("Error fetching transactions:", error);
+        }
+    };
+
+
+
     const handleFetchDetails = async () => {
-        if (!user || !user.id_user) {
+        if (!user?.id_user) {
             setError("Invalid user ID");
             return;
         }
-    
+
         try {
             const response = await fetch(
                 `http://localhost/financeapp/Myfinanceapp/Backend-finance/api/getbyid.php?id_user=${user.id_user}`
             );
-    
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-    
+
             const data = await response.json();
-    
             if (data.id_user) {
                 setDetails(data);
                 setError("");
-                setShowDetailsModal(true); // Clear any previous error
+                setShowDetailsModal(true);
             } else {
                 setError(data.message || "Failed to fetch user details.");
             }
         } catch (err) {
             console.error("Error fetching user details:", err);
-            setError(`An error occurred while fetching user details. ${err.message}`);
+            setError(`An error occurred: ${err.message}`);
         }
     };
-    
 
     const handleFormChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
-
     const handleAddTransaction = async () => {
-        const { accountId, category, typeTransaction, amount, description, transactionDate } = formData;
-
-        if (!accountId || !category || !typeTransaction || !amount || !description || !transactionDate) {
+        const { category, typeTransaction, amount, description, transactionDate } = formData;
+    
+        if (!category || !typeTransaction || !amount || !description || !transactionDate || !user?.id_user) {
             console.warn("Please fill in all required fields.");
             return;
         }
-
+    
+        const categoryReverseMapping = Object.fromEntries(Object.entries(categoryMapping).map(([id, name]) => [name, id]));
+        const transactionTypeReverseMapping = Object.fromEntries(Object.entries(transactionTypeMapping).map(([id, name]) => [name, id]));
+    
+        const payload = {
+            id_user: user.id_user, 
+            fk_id_category: parseInt(categoryReverseMapping[category]),
+            fk_type_transaction: parseInt(transactionTypeReverseMapping[typeTransaction]),
+            amount: parseFloat(amount),
+            description: description.trim(),
+            transaction_date: transactionDate,
+        };
+    
+        console.log("Add Transaction Payload:", payload);
+    
         try {
-            const response = await fetch("/api/transaction.php", {
+            const response = await fetch("http://localhost/financeapp/Myfinanceapp/Backend-finance/api/transaction.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id_account: accountId,
-                    category,
-                    type_transaction: typeTransaction,
-                    amount,
-                    description,
-                    transaction_date: transactionDate,
-                }),
+                body: JSON.stringify(payload),
             });
-
+    
             const data = await response.json();
-
+            console.log("Add Transaction Response:", data);
+    
             if (data.status === 1) {
-                setTransactions([
-                    ...transactions,
-                    { ...formData, id_transaction: Date.now() },
-                ]);
-
-                // Update user's current balance dynamically
-                const updatedBalance =
-                    typeTransaction === "Debit"
-                        ? user.current_balance - parseFloat(amount)
-                        : user.current_balance + parseFloat(amount);
-                setUser({ ...user, current_balance: updatedBalance.toFixed(2) });
-
+                fetchTransactions(); // Refresh transactions
                 setShowTransactionForm(false);
             } else {
-                console.warn("Failed to add transaction:", data.message);
+                console.error("Failed to add transaction:", data.message);
             }
         } catch (error) {
             console.error("Error adding transaction:", error);
+        }
+    };
+    
+    
+    const handleEditTransaction = async (updatedTransaction) => {
+        const categoryReverseMapping = Object.fromEntries(Object.entries(categoryMapping).map(([id, name]) => [name, id]));
+        const transactionTypeReverseMapping = Object.fromEntries(Object.entries(transactionTypeMapping).map(([id, name]) => [name, id]));
+    
+        if (!updatedTransaction.id_transaction || !user?.id_user) {
+            console.warn("Invalid input: Missing required fields.");
+            return;
+        }
+    
+        const payload = {
+            id_transaction: updatedTransaction.id_transaction, 
+            id_user: user.id_user, 
+            fk_id_category: parseInt(categoryReverseMapping[updatedTransaction.category]), 
+            fk_type_transaction: parseInt(transactionTypeReverseMapping[updatedTransaction.type_transaction]), 
+            amount: parseFloat(updatedTransaction.amount), 
+            description: updatedTransaction.description.trim(), 
+            transaction_date: updatedTransaction.transaction_date,
+        };
+    
+        console.log("Edit Transaction Payload:", payload);
+    
+        try {
+            const response = await fetch("http://localhost/financeapp/Myfinanceapp/Backend-finance/api/transaction.php", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+    
+            const data = await response.json();
+            console.log("Edit Transaction Response:", data);
+    
+            if (data.status === 1) {
+                console.log("Transaction updated successfully!");
+                fetchTransactions(); // Refresh transactions
+            } else {
+                console.error("Failed to update transaction:", data.message);
+            }
+        } catch (error) {
+            console.error("Error updating transaction:", error);
+        }
+    };
+    
+    
+    const handleDeleteTransaction = async (id_transaction) => {
+        try {
+            const response = await fetch("http://localhost/financeapp/Myfinanceapp/Backend-finance/api/transaction.php", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id_transaction }),
+            });
+
+            const data = await response.json();
+            if (data.status === 1) {
+                fetchTransactions(); // Refresh transactions list
+            } else {
+                console.warn("Failed to delete transaction:", data.message);
+            }
+        } catch (error) {
+            console.error("Error deleting transaction:", error);
         }
     };
 
@@ -155,6 +230,32 @@ export default function Dashboard() {
                 </Card.Body>
             </Card>
 
+             {/* Transactions Card */}
+             <Card className="mb-4">
+                <Card.Body>
+                    <Card.Title>Transactions</Card.Title>
+                    <Button 
+                        variant="primary" 
+                        onClick={() => setShowTransactionForm(true)} 
+                        style={{ marginBottom: "20px" }}
+                    >
+                        Add Transaction
+                    </Button>
+                    {transactions.length > 0 ? (
+                        <Transactions
+                        transactions={transactions}
+                        categoryMapping={categoryMapping}
+                        transactionTypeMapping={transactionTypeMapping}
+                        onEditTransaction={handleEditTransaction}
+                        onDeleteTransaction={handleDeleteTransaction}
+                    />
+                    
+                    ) : (
+                        <p>No transactions found.</p>
+                    )}
+                </Card.Body>
+            </Card>
+
             {/* Details Modal */}
             <Modal show={showDetailsModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
@@ -179,33 +280,6 @@ export default function Dashboard() {
                     </Button>
                 </Modal.Footer>
             </Modal>
-            {/* Transactions Card */}
-            <Card className="mb-4">
-                <Card.Body>
-                    <Card.Title>Transactions</Card.Title>
-                    <Button variant="primary" onClick={() => setShowTransactionForm(true)}>
-                        Add Transaction
-                    </Button>
-                    {transactions.length > 0 ? (
-                        <ul>
-                            {transactions.map((t) => (
-                                <li key={t.id_transaction}>
-                                    {t.description} - ${t.amount} ({t.transaction_date})
-                                    <Button variant="warning" size="sm" className="ms-2">
-                                        Edit
-                                    </Button>
-                                    <Button variant="danger" size="sm" className="ms-2">
-                                        Delete
-                                    </Button>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No transactions found.</p>
-                    )}
-                </Card.Body>
-            </Card>
-
             {/* Transaction Form Modal */}
             <Modal show={showTransactionForm} onHide={() => setShowTransactionForm(false)}>
                 <Modal.Header closeButton>
@@ -214,22 +288,20 @@ export default function Dashboard() {
                 <Modal.Body>
                     <Form>
                         <Form.Group className="mb-3">
-                            <Form.Label>Account</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="accountId"
-                                value={formData.accountId}
-                                onChange={handleFormChange}
-                            />
-                        </Form.Group>
-                        <Form.Group className="mb-3">
                             <Form.Label>Category</Form.Label>
                             <Form.Control
-                                type="text"
+                                as="select"
                                 name="category"
                                 value={formData.category}
                                 onChange={handleFormChange}
-                            />
+                            >
+                                <option value="">Select Category</option>
+                                {Object.values(categoryMapping).map((category) => (
+                                    <option key={category} value={category}>
+                                        {category}
+                                    </option>
+                                ))}
+                            </Form.Control>
                         </Form.Group>
                         <Form.Group className="mb-3">
                             <Form.Label>Type</Form.Label>
@@ -240,8 +312,11 @@ export default function Dashboard() {
                                 onChange={handleFormChange}
                             >
                                 <option value="">Select Type</option>
-                                <option value="Credit">Credit</option>
-                                <option value="Debit">Debit</option>
+                                {Object.values(transactionTypeMapping).map((type) => (
+                                    <option key={type} value={type}>
+                                        {type}
+                                    </option>
+                                ))}
                             </Form.Control>
                         </Form.Group>
                         <Form.Group className="mb-3">
@@ -282,10 +357,8 @@ export default function Dashboard() {
                     </Button>
                 </Modal.Footer>
             </Modal>
-
-            <Button variant="danger" onClick={handleLogout}>
-                Logout
-            </Button>
+            {/* Logout Button */}
+            <Button variant="danger" onClick={handleLogout}>Logout</Button>
             <Footer />
         </div>
     );

@@ -1,77 +1,185 @@
-//transaction lists
-import React, { useEffect, useState } from 'react'
-import { Table } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
-import { api } from '../services/api'
+import React, { useState } from "react";
+import { Button, Form, Modal, Table } from "react-bootstrap";
 
-const Transactionsbyid_user = () => {
-    const [transactions, setTransactions] = useState([])
-    //get user from php database
-    const [user, setUser] = useState(null);
-    const navigate = useNavigate()
+const Transactions = ({ 
+    transactions = [], 
+    categoryMapping = {}, 
+    transactionTypeMapping = {}, 
+    onEditTransaction, 
+    onDeleteTransaction 
+}) => {
+    const [editModalShow, setEditModalShow] = useState(false);
+    const [editFormData, setEditFormData] = useState({});
 
-    useEffect(() => {
-        const fetchTransactions = async () => {
-            try {
-                const response = await fetch(`/api/transaction.php?userId=${user.id_user}`);
-                const data = await response.json();
-                setTransactions(Array.isArray(data) ? data : []);
-            } catch (error) {
-                console.error("Error fetching transactions:", error);
-            }
+    const handleEditChange = (e) => {
+        setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
+    };
+
+    const handleEditSubmit = () => {
+        // Map category and transaction type names to IDs for backend compatibility
+        const categoryReverseMapping = Object.fromEntries(
+            Object.entries(categoryMapping).map(([id, name]) => [name, id])
+        );
+        const transactionTypeReverseMapping = Object.fromEntries(
+            Object.entries(transactionTypeMapping).map(([id, name]) => [name, id])
+        );
+
+        const updatedTransaction = {
+            ...editFormData,
+            fk_id_category: categoryReverseMapping[editFormData.category],
+            fk_type_transaction: transactionTypeReverseMapping[editFormData.type_transaction],
+            amount: parseFloat(editFormData.amount),
+            id_transaction: parseInt(editFormData.id_transaction),
+            fk_id_account: parseInt(editFormData.fk_id_account),
+            description: editFormData.description,
+            transaction_date: editFormData.transaction_date,
         };
 
-        const fetchUser = async () => {
-            try {
-                const response = await api.get('/user.php');
-                setUser(response.data);
-            } catch (error) {
-                console.error('Error fetching user:', error.response?.data || error.message);
-            }
-        };
-
-        fetchUser();
-        fetchTransactions();
-    })
+        onEditTransaction(updatedTransaction);
+        setEditModalShow(false);
+    };
 
     return (
         <div>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>id_transaction</th>
-                        <th>id_account</th>
-                        <th>category</th>
-                        <th>type_transaction</th>
-                        <th>amount</th>
-                        <th>description</th>
-                        <th>transaction_date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {transactions.map((transaction) => (
-                        <tr key={transaction.id_transaction}>
-                            <td>{transaction.id_transaction}</td>
-                            <td>{transaction.id_account}</td>
-                            <td>{transaction.category}</td>
-                            <td>{transaction.type_transaction}</td>
-                            <td>{transaction.amount}</td>
-                            <td>{transaction.description}</td>
-                            <td>{transaction.transaction_date}</td>
-                            <td>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={() => navigate(`/edit/${transaction.id_transaction}`)}
-                                >
-                                    Edit
-                                </button>
-                            </td>
+            <h2>Transactions</h2>
+            {transactions.length > 0 ? (
+                <Table striped bordered hover responsive size="sm" className="mt-3">
+                    <thead>
+                        <tr>
+                            <th>Transaction id</th>
+                            <th>Account id</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Description</th>
+                            <th>Date</th>
+                            <th>Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </Table>
-        </div>
-    )    
-}
+                    </thead>
+                    <tbody>
+                        {transactions.map((t) => (
+                            <tr key={t.id_transaction}>
+                                <td>{t.id_transaction}</td>
+                                <td>{t.fk_id_account}</td>
+                                <td>{categoryMapping[t.fk_id_category] || "Unknown"}</td>
+                                <td>{transactionTypeMapping[t.fk_type_transaction] || "Unknown"}</td>
+                                <td>${t.amount}</td>
+                                <td>{t.description}</td>
+                                <td>{t.transaction_date}</td>
+                                <td>
+                                    <Button
+                                        variant="warning"
+                                        size="sm"
+                                        onClick={() => {
+                                            setEditFormData({
+                                                id_transaction: t.id_transaction, // Add the transaction ID
+                                                fk_id_account: t.fk_id_account, // Account ID
+                                                category: categoryMapping[t.fk_id_category], // Map ID to name
+                                                type_transaction: transactionTypeMapping[t.fk_type_transaction], // Map ID to name
+                                                amount: t.amount,
+                                                description: t.description,
+                                                transaction_date: t.transaction_date,
+                                            });
+                                            setEditModalShow(true);
+                                        }}
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={() => onDeleteTransaction(t.id_transaction)}
+                                    >
+                                        Delete
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            ) : (
+                <p>No transactions found.</p>
+            )}
 
-export default Transactionsbyid_user
+            {/* Edit Transaction Modal */}
+            <Modal show={editModalShow} onHide={() => setEditModalShow(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Edit Transaction</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Category</Form.Label>
+                            <Form.Control
+                                as="select"
+                                name="category"
+                                value={editFormData.category || ""}
+                                onChange={handleEditChange}
+                            >
+                                <option value="">Select Category</option>
+                                {Object.values(categoryMapping).map((category) => (
+                                    <option key={category} value={category}>
+                                        {category}
+                                    </option>
+                                ))}
+                            </Form.Control>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Type</Form.Label>
+                            <Form.Control
+                                as="select"
+                                name="type_transaction"
+                                value={editFormData.type_transaction || ""}
+                                onChange={handleEditChange}
+                            >
+                                <option value="">Select Type</option>
+                                {Object.values(transactionTypeMapping).map((type) => (
+                                    <option key={type} value={type}>
+                                        {type}
+                                    </option>
+                                ))}
+                            </Form.Control>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Amount</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="amount"
+                                value={editFormData.amount || ""}
+                                onChange={handleEditChange}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Description</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="description"
+                                value={editFormData.description || ""}
+                                onChange={handleEditChange}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Date</Form.Label>
+                            <Form.Control
+                                type="date"
+                                name="transaction_date"
+                                value={editFormData.transaction_date || ""}
+                                onChange={handleEditChange}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setEditModalShow(false)}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={handleEditSubmit}>
+                        Save Changes
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </div>
+    );
+};
+
+export default Transactions;
