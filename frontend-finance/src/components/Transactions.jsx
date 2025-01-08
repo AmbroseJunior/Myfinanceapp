@@ -16,32 +16,41 @@ const Transactions = ({
     };
 
     const handleEditSubmit = () => {
-        // Map category and transaction type names to IDs for backend compatibility
         const categoryReverseMapping = Object.fromEntries(
             Object.entries(categoryMapping).map(([id, name]) => [name, id])
         );
         const transactionTypeReverseMapping = Object.fromEntries(
             Object.entries(transactionTypeMapping).map(([id, name]) => [name, id])
         );
-
+    
         const updatedTransaction = {
             ...editFormData,
-            fk_id_category: categoryReverseMapping[editFormData.category],
-            fk_type_transaction: transactionTypeReverseMapping[editFormData.type_transaction],
-            amount: parseFloat(editFormData.amount),
+            fk_id_category: categoryReverseMapping[editFormData.category] || null,
+            fk_type_transaction: transactionTypeReverseMapping[editFormData.type_transaction] || null,
+            amount: parseFloat(editFormData.amount) || 0,
             id_transaction: parseInt(editFormData.id_transaction),
             fk_id_account: parseInt(editFormData.fk_id_account),
             description: editFormData.description,
             transaction_date: editFormData.transaction_date,
         };
-
+    
+        if (
+            !updatedTransaction.fk_id_category ||
+            !updatedTransaction.fk_type_transaction ||
+            updatedTransaction.amount <= 0
+        ) {
+            alert("Invalid input. Please fill all required fields.");
+            return;
+        }
+    
         onEditTransaction(updatedTransaction);
         setEditModalShow(false);
     };
+    
 
     return (
         <div>
-            <h2>Transactions</h2>
+            <h2>Transaction History</h2>
             {transactions.length > 0 ? (
                 <Table striped bordered hover responsive size="sm" className="mt-3">
                     <thead>
@@ -72,10 +81,10 @@ const Transactions = ({
                                         size="sm"
                                         onClick={() => {
                                             setEditFormData({
-                                                id_transaction: t.id_transaction, // Add the transaction ID
-                                                fk_id_account: t.fk_id_account, // Account ID
-                                                category: categoryMapping[t.fk_id_category], // Map ID to name
-                                                type_transaction: transactionTypeMapping[t.fk_type_transaction], // Map ID to name
+                                                id_transaction: t.id_transaction, 
+                                                fk_id_account: t.fk_id_account, 
+                                                category: categoryMapping[t.fk_id_category], 
+                                                type_transaction: transactionTypeMapping[t.fk_type_transaction],
                                                 amount: t.amount,
                                                 description: t.description,
                                                 transaction_date: t.transaction_date,

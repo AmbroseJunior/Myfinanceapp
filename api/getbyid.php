@@ -13,8 +13,14 @@ $id_user = $_GET['id_user'] ?? null;
 
 if ($id_user) {
     try {
+        // Query to get user data, including the current_balance directly from the database
         $sql = "
-            SELECT u.id_user, u.name, u.account_type, u.current_balance, a.Bank
+            SELECT 
+                u.id_user, 
+                u.name, 
+                u.account_type, 
+                u.current_balance, 
+                a.Bank
             FROM user u
             LEFT JOIN account a ON u.id_user = a.fk_id_user
             WHERE u.id_user = :id_user
@@ -24,7 +30,11 @@ if ($id_user) {
         $stmt->execute();
         $userProfile = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        // Debugging log for testing
+        error_log(print_r($userProfile, true));
+
         if ($userProfile) {
+            // Return user data including current_balance
             echo json_encode($userProfile);
         } else {
             echo json_encode(['status' => 0, 'message' => 'No profile found for this user']);
