@@ -163,29 +163,6 @@ npm run dev
 
 ---
 
-## Database Schema
-
-### Users Table
-
-| Column   | Type                  | Description        |
-| -------- | --------------------- | ------------------ |
-| id       | INT (AUTO\_INCREMENT) | Unique user ID     |
-| name     | VARCHAR(255)          | User's name        |
-| email    | VARCHAR(255)          | User's email       |
-| password | VARCHAR(255)          | Encrypted password |
-
-### Expenditures Table
-
-| Column      | Type                  | Description                |
-| ----------- | --------------------- | -------------------------- |
-| id          | INT (AUTO\_INCREMENT) | Unique expenditure ID      |
-| user\_id    | INT                   | Foreign key to Users table |
-| amount      | DECIMAL(10,2)         | Expenditure amount         |
-| description | TEXT                  | Details of the expenditure |
-| date        | DATE                  | Date of expenditure        |
-
----
-
 ## Troubleshooting
 
 ### Common Issues
