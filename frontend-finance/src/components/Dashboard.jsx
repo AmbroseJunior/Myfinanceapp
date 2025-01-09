@@ -3,6 +3,7 @@ import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Modal from "react-bootstrap/Modal";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Footer from "./Footer";
 import Transactions from "./Transactions";
 
@@ -13,6 +14,7 @@ export default function Dashboard() {
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [error, setError] = useState("");
     const [showTransactionForm, setShowTransactionForm] = useState(false);
+    const [showAmounts, setShowAmounts] = useState(true);
     const [formData, setFormData] = useState({
         fk_id_account: "",
         category: "",
@@ -54,6 +56,10 @@ export default function Dashboard() {
         } catch (error) {
             console.error("Error fetching transactions:", error);
         }
+    };
+
+    const handleToggleAmounts = () => {
+        setShowAmounts((prev) => !prev);
     };
 
     const handleFetchDetails = async () => {
@@ -251,12 +257,20 @@ export default function Dashboard() {
             {/* User Profile Card */}
             <Card className="mb-4">
                 <Card.Body>
-                    <Card.Title>Your Profile</Card.Title>
+                    <Card.Title>Your Profile
+                        <span style={{
+                                marginLeft: "10px",
+                                cursor: "pointer",
+                                color: "var(--primary-color)",
+                            }} onClick={handleToggleAmounts}>
+                            {showAmounts ? <FaEyeSlash /> : <FaEye />}
+                        </span>
+                    </Card.Title>
                     {user ? (
                         <Card.Text>
                             <strong>Name:</strong> {user.name} <br />
                             <strong>Account Type:</strong> {user.account_type} <br />
-                            <strong>Current Balance:</strong> ${user.current_balance} 
+                            <strong>Current Balance:</strong> ${showAmounts ? user.current_balance : "****"}
                         </Card.Text>
                     ) : (
                         <p>No user information available.</p>
@@ -395,7 +409,10 @@ export default function Dashboard() {
                 </Modal.Footer>
             </Modal>
             {/* Logout Button */}
-            <Button variant="danger" onClick={handleLogout}>Logout</Button>
+            <div className="logout-button" style={{ textAlign: "center", margin: "20px 0" }}>
+                <Button variant="danger" onClick={handleLogout}>Logout</Button>
+            </div>
+            {/* Footer */}
             <Footer />
         </div>
     );

@@ -1,207 +1,253 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* General Styling */
+:root {
+  font-family: 'Poppins', Arial, sans-serif;
+  --primary-color: #6a5acd; /* Modern purple shade */
+  --secondary-color: #4caf50; /* Complementary green */
+  --background-color: #1e1e2f;
+  --text-color: #f5f5f5;
+  --accent-color: #ff4081;
+  --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  --hover-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  --transition-speed: 0.3s;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+body {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
 }
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #ffffff); /* Adjusted to white for better visibility */
-}
-
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #ffffff); /* Adjusted to white for better visibility */
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-#h1 {
-  color: #ffffff; /* White for better visibility */
+h1 {
   font-size: 2.5rem;
   font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); /* Shadow for extra readability */
+  color: var(--primary-color);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  margin-bottom: 1rem;
 }
 
-.card {
-  padding: 2rem;
-  background-color: rgba(255, 255, 255, 0.85); /* Semi-transparent white background */
-  border: 1px solid #251a06;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  margin-bottom: 2rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 3rem;
-  grid-auto-flow: dense;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  transition: transform 0.2s;
-  cursor: pointer;
-}
-
-.card:hover {
-  transform: scale(1.02);
-}
-
-.card.title {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 0.5em;
-  color: #333333; /* Darker text color for contrast */
-  text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.8); /* Subtle shadow */
-}
-
-.card.text-muted {
-  color: #444444; /* Adjusted for clarity */
-  font-size: 1.2rem;
-}
-
-.read-the-docs {
-  color: #ffffff;
-  margin-top: 1rem;
-  font-size: 1.2rem;
-  text-align: left;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-}
-
-/* Button Styling */
-.btn {
-  padding: 0.8rem 1.5rem;
-  font-size: 1rem;
-  border-radius: 5px;
-  transition: background-color 0.3s, transform 0.2s;
-}
-
-.btn:hover {
-  transform: scale(1.05);
-}
-
-.btn-primary {
-  background-color: #007bff;
-  border: none;
-  color: #ffffff;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  border: none;
-  color: #ffffff;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.btn-danger:hover {
-  background-color: #a71d2a;
-}
-
-/* Layout Styling */
-body {
-  background-image: url('../../src/img/ai.jpg');
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: center;
-  color: #ffffff; /* Default text color to stand out against background */
-  font-family: 'Arial', sans-serif;
-  font-size: 1rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); /* Add shadow for readability */
-}
-
+/* Container */
 .container {
+  max-width: 1280px;
   padding: 2rem;
-}
-
-.row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  grid-gap: 2rem;
-  grid-auto-flow: dense;
-  align-items: center;
-  justify-content: center;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 2rem;
 }
 
-/* Modal styling */
-.modal-content {
-  border-radius: 10px;
+/* Modern Card Design */
+.card {
+  padding: 1.5rem;
+  background: linear-gradient(145deg, #ffffff, #f0f0f5);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--hover-shadow);
+}
+
+.card.title {
+  font-size: 1.8rem;
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.card.text-muted {
+  font-size: 1.2rem;
+  color: #777;
+  align-items: center;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
   border: none;
-  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+  color: var(--text-color);
+  transition: transform var(--transition-speed), background-color var(--transition-speed);
+}
+
+.btn-primary {
+  background: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background: #5a4eb5;
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+  background: #3e8b3c;
+  transform: scale(1.05);
+}
+
+.btn-danger {
+  background: var(--accent-color);
+}
+
+.btn-danger:hover {
+  background: #e63972;
+  transform: scale(1.05);
+}
+
+/* Home Page Image Styling */
+.home-card-img {
+  width: 90%; /* Reduced image size for better alignment */
+  max-height: 300px;
+  object-fit: cover;
+  margin: 0 auto;
+  display: block;
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  .container {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .card {
+    margin: 0 1rem;
+  }
+
+  .home-card-img {
+    max-height: 200px; /* Further minimize for smaller screens */
+  }
+
+  .btn {
+    width: 100%;
+    padding: 0.8rem;
+  }
+}
+
+/* Modal Enhancements */
+.modal-content {
+  border-radius: 16px;
+  background: #ffffff;
+  color: #333333; /* Dark text for better readability */
+  padding: 2rem;
+  box-shadow: var(--hover-shadow);
+  font-family: 'Poppins', Arial, sans-serif;
 }
 
 .modal-header {
-  background-color: #007bff;
-  color: #fff;
-  border-bottom: none;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  background: var(--primary-color);
+  color: var(--text-color);
+  border-radius: 12px 12px 0 0;
+  padding: 1.2rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header .btn-close {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform var(--transition-speed), color var(--transition-speed);
+}
+
+.modal-header .btn-close:hover {
+  color: #ffffff;
+  transform: scale(1.1);
 }
 
 .modal-title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: bold;
+  margin: 0;
 }
 
 .modal-body {
-  font-size: 1rem;
-  color: #333;
-  line-height: 1.5;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #444444; /* Dark gray for better readability */
+  padding: 1rem 0;
+}
+
+.modal-body p {
+  margin-bottom: 1rem;
 }
 
 .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
   border-top: none;
-  justify-content: center;
+  padding: 1rem 0 0;
 }
 
 .modal-footer .btn {
-  border-radius: 5px;
-  padding: 0.5rem 1.5rem;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  transition: transform var(--transition-speed), background-color var(--transition-speed);
 }
 
 .modal-footer .btn-secondary {
-  background-color: #6c757d;
-  border-color: #6c757d;
+  background: #e0e0e0;
+  color: #333333;
 }
 
 .modal-footer .btn-secondary:hover {
-  background-color: #565e64;
-  border-color: #565e64;
+  background: #d6d6d6;
 }
 
 .modal-footer .btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
+  background: var(--primary-color);
+  color: var(--text-color);
 }
 
 .modal-footer .btn-primary:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
+  background: #5a4eb5;
 }
 
-/* Add padding to the modal body for a cleaner look */
-.modal-body p {
-  margin-bottom: 0.8rem;
+/* Responsive Enhancements for Modals */
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 1.5rem;
+  }
+
+  .modal-title {
+    font-size: 1.4rem;
+  }
+
+  .modal-body {
+    font-size: 1rem;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    text-align: center;
+    padding: 0.8rem;
+  }
 }
+
