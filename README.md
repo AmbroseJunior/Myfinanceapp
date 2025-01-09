@@ -1,3 +1,7 @@
+Here is the updated README with the newest functionalities added while retaining the existing structure and information:
+
+---
+
 # Comprehensive Fullstack App Project.
 
 Finance App Tracker.
@@ -19,6 +23,11 @@ This repository hosts a fullstack application with a **Vite React.js frontend** 
   - Delete expenditures.
   - View a detailed list of expenditures.
 - **Bank Account Integration**: Expenditures are linked to a user's registered bank account.
+- **Visibility Toggle**:
+  - Allows users to toggle visibility of sensitive financial details (e.g., account balance and expenditure amounts) with a single click.
+- **Transaction Management**:
+  - Displays categorized transaction history.
+  - Supports filtering by categories and transaction types (Deposit/Withdrawal).
 
 ### Non-Functional Requirements
 
@@ -135,6 +144,18 @@ npm run dev
 - **Update**: Edit existing expenditures.
 - **Delete**: Remove unwanted expenditures.
 
+### Visibility Toggle
+
+- Users can toggle the visibility of sensitive financial data (e.g., account balance, expenditure amounts) by clicking an eye/eye-slash icon.
+
+### Transaction Management
+
+- Categorized transaction history.
+- Filter transactions by:
+  - **Category** (e.g., Salary, Rent, Bills).
+  - **Type** (Deposit/Withdrawal).
+- View transaction details in a modal.
+
 ### Security Measures
 
 - **Password Hashing**: Ensures sensitive data protection.
@@ -194,3 +215,6 @@ This project does not have a specified license. Contact the repository owner for
 - **XAMPP** for simplifying the local server setup.
 - The open-source community for libraries and tools.
 
+---
+
+Let me know if you need further changes! 🚀
