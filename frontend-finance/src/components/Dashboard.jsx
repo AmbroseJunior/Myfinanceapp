@@ -56,25 +56,30 @@ export default function Dashboard() {
         }
     };
 
-
-
     const handleFetchDetails = async () => {
         if (!user?.id_user) {
             setError("Invalid user ID");
             return;
         }
-
+    
         try {
             const response = await fetch(
                 `http://localhost/financeapp/Myfinanceapp/Backend-finance/api/getbyid.php?id_user=${user.id_user}`
             );
-
+    
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-
+    
             const data = await response.json();
+    
             if (data.id_user) {
+                // Use the backend's current_balance value and update only that
+                const updatedUser = { ...user, current_balance: parseFloat(data.current_balance) };
+                setUser(updatedUser);
+                localStorage.setItem("user", JSON.stringify(updatedUser));
+    
+                // Update the modal details
                 setDetails(data);
                 setError("");
                 setShowDetailsModal(true);
@@ -86,10 +91,12 @@ export default function Dashboard() {
             setError(`An error occurred: ${err.message}`);
         }
     };
-
+    
     const handleFormChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+
+    
     const handleAddTransaction = async () => {
         const { category, typeTransaction, amount, description, transactionDate } = formData;
     
@@ -110,8 +117,6 @@ export default function Dashboard() {
             transaction_date: transactionDate,
         };
     
-        console.log("Add Transaction Payload:", payload);
-    
         try {
             const response = await fetch("http://localhost/financeapp/Myfinanceapp/Backend-finance/api/transaction.php", {
                 method: "POST",
@@ -123,7 +128,17 @@ export default function Dashboard() {
             console.log("Add Transaction Response:", data);
     
             if (data.status === 1) {
-                fetchTransactions(); // Refresh transactions
+                // Update current balance in frontend
+                const newBalance =
+                    typeTransaction === "Deposit"
+                        ? user.current_balance + parseFloat(amount)
+                        : user.current_balance - parseFloat(amount);
+    
+                const updatedUser = { ...user, current_balance: newBalance };
+                setUser(updatedUser);
+                localStorage.setItem("user", JSON.stringify(updatedUser));
+    
+                fetchTransactions();
                 setShowTransactionForm(false);
             } else {
                 console.error("Failed to add transaction:", data.message);
@@ -134,26 +149,25 @@ export default function Dashboard() {
     };
     
     
-    const handleEditTransaction = async (updatedTransaction) => {
-        const categoryReverseMapping = Object.fromEntries(Object.entries(categoryMapping).map(([id, name]) => [name, id]));
-        const transactionTypeReverseMapping = Object.fromEntries(Object.entries(transactionTypeMapping).map(([id, name]) => [name, id]));
     
+    const handleEditTransaction = async (updatedTransaction) => {
         if (!updatedTransaction.id_transaction || !user?.id_user) {
             console.warn("Invalid input: Missing required fields.");
             return;
         }
     
+        const categoryReverseMapping = Object.fromEntries(Object.entries(categoryMapping).map(([id, name]) => [name, id]));
+        const transactionTypeReverseMapping = Object.fromEntries(Object.entries(transactionTypeMapping).map(([id, name]) => [name, id]));
+    
         const payload = {
-            id_transaction: updatedTransaction.id_transaction, 
-            id_user: user.id_user, 
-            fk_id_category: parseInt(categoryReverseMapping[updatedTransaction.category]), 
-            fk_type_transaction: parseInt(transactionTypeReverseMapping[updatedTransaction.type_transaction]), 
-            amount: parseFloat(updatedTransaction.amount), 
-            description: updatedTransaction.description.trim(), 
+            id_transaction: updatedTransaction.id_transaction,
+            id_user: user.id_user,
+            fk_id_category: parseInt(categoryReverseMapping[updatedTransaction.category]),
+            fk_type_transaction: parseInt(transactionTypeReverseMapping[updatedTransaction.type_transaction]),
+            amount: parseFloat(updatedTransaction.amount),
+            description: updatedTransaction.description.trim(),
             transaction_date: updatedTransaction.transaction_date,
         };
-    
-        console.log("Edit Transaction Payload:", payload);
     
         try {
             const response = await fetch("http://localhost/financeapp/Myfinanceapp/Backend-finance/api/transaction.php", {
@@ -167,7 +181,20 @@ export default function Dashboard() {
     
             if (data.status === 1) {
                 console.log("Transaction updated successfully!");
-                fetchTransactions(); // Refresh transactions
+    
+                // Fetch updated user details to sync current_balance
+                const userDetailsResponse = await fetch(
+                    `http://localhost/financeapp/Myfinanceapp/Backend-finance/api/getbyid.php?id_user=${user.id_user}`
+                );
+                const userDetails = await userDetailsResponse.json();
+    
+                if (userDetails.id_user) {
+                    const updatedUser = { ...user, current_balance: parseFloat(userDetails.current_balance) };
+                    setUser(updatedUser);
+                    localStorage.setItem("user", JSON.stringify(updatedUser));
+                }
+    
+                fetchTransactions();
             } else {
                 console.error("Failed to update transaction:", data.message);
             }
@@ -177,17 +204,26 @@ export default function Dashboard() {
     };
     
     
+    
     const handleDeleteTransaction = async (id_transaction) => {
+        if (!id_transaction) {
+            console.warn("Invalid transaction ID.");
+            return;
+        }
+    
         try {
             const response = await fetch("http://localhost/financeapp/Myfinanceapp/Backend-finance/api/transaction.php", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id_transaction }),
             });
-
+    
             const data = await response.json();
+            console.log("Delete Transaction Response:", data);
+    
             if (data.status === 1) {
-                fetchTransactions(); // Refresh transactions list
+                console.log("Transaction deleted successfully!");
+                fetchTransactions(); // Refresh transaction list
             } else {
                 console.warn("Failed to delete transaction:", data.message);
             }
@@ -195,7 +231,8 @@ export default function Dashboard() {
             console.error("Error deleting transaction:", error);
         }
     };
-
+    
+    
     const handleCloseModal = () => {
         setShowDetailsModal(false);
         setDetails(null);
@@ -219,7 +256,7 @@ export default function Dashboard() {
                         <Card.Text>
                             <strong>Name:</strong> {user.name} <br />
                             <strong>Account Type:</strong> {user.account_type} <br />
-                            <strong>Current Balance:</strong> ${user.current_balance} <br />
+                            <strong>Current Balance:</strong> ${user.current_balance} 
                         </Card.Text>
                     ) : (
                         <p>No user information available.</p>
