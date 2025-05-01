@@ -13,14 +13,24 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    sourcemap: false,
+  },
+  optimizeDeps: {
+    include: [
+      '@react-oauth/google',
+      'jwt-decode',
+      'react-bootstrap'
+    ]
+  },
   server: {
     proxy: {
       '/api': {
         target: 'http://localhost/financeapp/Myfinanceapp/Backend-finance',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ''), // Removes '/api' prefix when forwarding to the backend
-      },
-    },
-  },
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      }
+    }
+  }
 });

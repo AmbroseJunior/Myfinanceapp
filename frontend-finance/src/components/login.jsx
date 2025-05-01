@@ -1,18 +1,38 @@
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { jwtDecode } from 'jwt-decode';
 import React, { useState } from "react";
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { handleError } from '../services/errorHandler';
 import Footer from './Footer';
 
 export default function Login({ onLogin }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const navigate = useNavigate();
     const [message, setMessage] = useState('');
+    const [isExistingUser, setIsExistingUser] = useState(null);
+    const [googleUser, setGoogleUser] = useState(null);
+    const navigate = useNavigate();
+
+    const checkUserExists = async (email) => {
+        try {
+            const response = await api.post('/api/check-user.php', { email });
+            setIsExistingUser(response.data.exists);
+        } catch (error) {
+            setIsExistingUser(false);
+        }
+    };
+
+    const handleEmailChange = (e) => {
+        const emailInput = e.target.value;
+        setEmail(emailInput);
+        if (emailInput) checkUserExists(emailInput);
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -20,95 +40,117 @@ export default function Login({ onLogin }) {
         setMessage('');
 
         if (!email || !password) {
-            setError('Please fill in all fields');
+            setError('Email and password are required.');
             return;
         }
 
         try {
-            const response = await api.post('/api/login.php', {
-                email,
-                password,
-            });
-            console.log('API Response:', response.data); 
+            const response = await api.post('/api/login.php', { email, password });
 
             if (response.data.status === 1) {
-                // Store user details in localStorage
                 localStorage.setItem('user', JSON.stringify(response.data.user));
-
-                // Navigate to the dashboard
-                setMessage('Login successful!');
-                navigate('/Dashboard');
-                onLogin(true);console.log('Navigating to Dashboard...');
-
+                navigate('/dashboard');
+                onLogin(true);
             } else {
-                setError(response.data.message || 'Invalid email or password');
+                setError(response.data.message);
             }
         } catch (error) {
-            console.error('Login error:', error);
-            setError('An error occurred. Please try again.');
+            setError(handleError(error));
         }
     };
 
-    const handleHomepage = () => {
-        navigate('/');
+    const handleGoogleLogin = async (credentialResponse) => {
+        try {
+            const decoded = jwtDecode(credentialResponse.credential);
+            const response = await api.post('/api/google-login.php', {
+                email: decoded.email,
+                name: decoded.name,
+                googleId: decoded.sub
+            });
+    
+            if (response.data.status === 1) {
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+                
+                
+                window.location.href = '/dashboard'; 
+
+
+                console.log('Google Response:', decoded);
+                console.log('API Response:', response.data); 
+            }
+        } catch (error) {
+            console.error('Google Auth Error:', error);
+            setError("Login failed - check console for details");
+        }
     };
 
     return (
-        <>
-        <Card style={{ width: '50rem' }}>
-            <Card.Img variant="top" src="src/img/bg.jpg" />
-            <Card.Body>
-                <Form onSubmit={handleLogin}>
-                    <Form.Group controlId="formBasicEmail">
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <Card style={{ width: '50rem', margin: '2rem auto' }}>
+                <Card.Img variant="top" src="src/img/bg.jpg" />
+                <Card.Body>
+                    {/* Email input field */}
+                    <Form.Group controlId="formBasicEmail" className="mb-3">
                         <Form.Label>Email address</Form.Label>
                         <Form.Control
                             type="email"
                             placeholder="Enter email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={handleEmailChange}
                         />
                     </Form.Group>
 
-                    <Form.Group controlId="formBasicPassword">
-                        <Form.Label>Password</Form.Label>
-                        <Form.Control
-                            type="password"
-                            placeholder="Enter password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
+                    {/* Password form shows only if email exists in system */}
+                    {isExistingUser && (
+                        <Form onSubmit={handleLogin}>
+                            <Form.Group controlId="formBasicPassword" className="mb-3">
+                                <Form.Label>Password</Form.Label>
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Enter password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </Form.Group>
+                            <Button variant="success" type="submit" className="w-100 mb-3">
+                                Login with Email
+                            </Button>
+                        </Form>
+                    )}
+
+                    {/* Google login always available */}
+                    <div className="text-center mb-3">
+                        <GoogleLogin
+                            onSuccess={handleGoogleLogin}
+                            onError={() => setError("Google login failed")}
+                            text={isExistingUser ? "continue_with" : "signup_with"}
+                            shape="rectangular"
+                            size="large"
+                            ux_mode="popup"
+                            prompt="select_account"
                         />
-                    </Form.Group>
+                        {/* Optionally show signed-in Google email */}
+                        {googleUser?.email && (
+                            <div className="mt-2 text-muted" style={{ fontSize: '0.9rem' }}>
+                                Signed in as: <strong>{googleUser.email}</strong>
+                            </div>
+                        )}
+                    </div>
 
-                    {error && <p className="text-danger">{error}</p>}
+                    {/* Error / Success Messages */}
+                    {error && <div className="alert alert-danger mt-3">{error}</div>}
+                    {message && <div className="alert alert-success mt-3">{message}</div>}
 
-                    <Form.Group controlId="formBasicCheckbox">
-                        <Form.Check type="checkbox" label="Remember me" />
-                    </Form.Group>
-
-                    <Card.Body>
-                        <Button variant="success" type="submit" onClick={handleLogin}>
-                            Login
+                    {/* Navigation link */}
+                    <div className="text-center mt-4">
+                        <Button variant="outline-secondary" onClick={() => navigate('/')}>
+                            Back to Homepage
                         </Button>
-                        {message && <p className="text-success mt-3">{message}</p>}
-                    </Card.Body>
-
-                    <Card text="dark" className="text-center">
-                        <Card.Body>
-                            <Card.Text>
-                                Don't have an account? <Link to="/register">Register</Link>
-                            </Card.Text>
-                        </Card.Body>
-                    </Card>
-                    <Card.Body>
-                        <Button variant="success" onClick={handleHomepage}>
-                            Homepage
-                        </Button>
-                    </Card.Body>
-                </Form>
-            </Card.Body>
-        </Card>
-        <Footer />
-        </>
-    ); 
+                    </div>
+                </Card.Body>
+            </Card>
+            <Footer />
+        </GoogleOAuthProvider>
+    );
 }

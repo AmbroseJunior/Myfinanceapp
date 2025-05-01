@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import React, { useState } from "react";
 import { Button, Form, Modal, Table } from "react-bootstrap";
 
@@ -30,7 +31,7 @@ const Transactions = ({
             amount: parseFloat(editFormData.amount) || 0,
             id_transaction: parseInt(editFormData.id_transaction),
             fk_id_account: parseInt(editFormData.fk_id_account),
-            description: editFormData.description,
+            description: DOMPurify.sanitize(editFormData.description),
             transaction_date: editFormData.transaction_date,
         };
     

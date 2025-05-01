@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
@@ -119,7 +120,7 @@ export default function Dashboard() {
             fk_id_category: parseInt(categoryReverseMapping[category]),
             fk_type_transaction: parseInt(transactionTypeReverseMapping[typeTransaction]),
             amount: parseFloat(amount),
-            description: description.trim(),
+            description: DOMPurify.sanitize(description.trim()),
             transaction_date: transactionDate,
         };
     
@@ -171,7 +172,7 @@ export default function Dashboard() {
             fk_id_category: parseInt(categoryReverseMapping[updatedTransaction.category]),
             fk_type_transaction: parseInt(transactionTypeReverseMapping[updatedTransaction.type_transaction]),
             amount: parseFloat(updatedTransaction.amount),
-            description: updatedTransaction.description.trim(),
+            description: DOMPurify.sanitize(updatedTransaction.description.trim()),
             transaction_date: updatedTransaction.transaction_date,
         };
     
